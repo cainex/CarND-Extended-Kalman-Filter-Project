@@ -36,15 +36,19 @@ FusionEKF::FusionEKF() {
     * Finish initializing the FusionEKF.
     * Set the process and measurement noises
   */
+  // Initialize H_laser_, no need to initialize Hj,
+  // as that is calculated for every measurement step
   H_laser_ << 1, 0, 0, 0,
               0, 1, 0, 0;
 
+  // Initialize F
   ekf_.F_ = MatrixXd(4,4);
   ekf_.F_ << 1, 0, 1, 0,
              0, 1, 0, 1,
              0, 0, 1, 0,
              0, 0, 0, 1;
 
+  // Initialize P
   ekf_.P_ = MatrixXd(4,4);
   ekf_.P_ << 1, 0, 0, 0,
             0, 1, 0, 0,
@@ -80,6 +84,9 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       /**
       Convert radar from polar to cartesian coordinates and initialize state.
       */
+      // Polar to Cartesian
+      //   x = r*cos(PHI)
+      //   y = r*cos(PHI)
       float px = measurement_pack.raw_measurements_[0] * cos(measurement_pack.raw_measurements_[1]);
       float py = measurement_pack.raw_measurements_[0] * sin(measurement_pack.raw_measurements_[1]);
       float vx = measurement_pack.raw_measurements_[2] * cos(measurement_pack.raw_measurements_[1]);
@@ -93,6 +100,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       ekf_.x_ << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], 0, 0;
     }
 
+    // Set previous timestamp for initial measurement
     previous_timestamp_ = measurement_pack.timestamp_;
 
     // done initializing, no need to predict or update  
